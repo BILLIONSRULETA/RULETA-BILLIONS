@@ -408,6 +408,12 @@
       <div class="prize-name" id="prizeName">---</div>
 
       <p class="claim-text">
+        Para participar de este premio tenés que hacer una carga mínima de:
+        <br>
+        <strong id="cargaMinima">---</strong>
+      </p>
+
+      <p class="claim-text">
         Para activarlo, abrí el webchat y escribí:
         <br>
         <strong id="claimMessage">QUIERO MI PREMIO</strong>
@@ -475,12 +481,12 @@
 
   <script>
     const premios = [
-      { nombre: "3.500 FICHAS", porcentaje: 32, cargaMinima: 10500 },
-      { nombre: "2.500 EXTRA", porcentaje: 32, cargaMinima: 5000 },
-      { nombre: "5.000 EXTRA", porcentaje: 1, cargaMinima: 15000 },
-      { nombre: "1.000 FICHAS", porcentaje: 32, cargaMinima: 3000 },
-      { nombre: "2.000 FICHAS", porcentaje: 2, cargaMinima: 4000 },
-      { nombre: "3.000 FICHAS", porcentaje: 1, cargaMinima: 10000 }     
+      { nombre: "3.500 FICHAS", porcentaje: 32, cargaMinima: "10.500" },
+      { nombre: "2.500 EXTRA", porcentaje: 32, cargaMinima: "5.000" },
+      { nombre: "5.000 EXTRA", porcentaje: 1, cargaMinima: "15.000" },
+      { nombre: "1.000 FICHAS", porcentaje: 32, cargaMinima: "3.000" },
+      { nombre: "2.000 FICHAS", porcentaje: 2, cargaMinima: "4.000" },
+      { nombre: "3.000 FICHAS", porcentaje: 1, cargaMinima: "10.000" }     
     ];
 
     const canvas = document.getElementById("wheel");
@@ -490,6 +496,7 @@
     const centerSpin = document.getElementById("centerSpin");
     const resultCard = document.getElementById("resultCard");
     const prizeName = document.getElementById("prizeName");
+    const cargaMinima = document.getElementById("cargaMinima");
     const claimMessage = document.getElementById("claimMessage");
     const openChatBtn = document.getElementById("openChatBtn");
     const webchatGuide = document.getElementById("webchatGuide");
@@ -534,47 +541,9 @@
     const radius = center - 18;
 
     let currentRotation = 0;
-    const ruletaStorageKeys = ["billions_ruleta_usada", "billions_ruleta_usada3", "billions_ruleta_usada5"];
-    const ruletaCookieKey = "billions_ruleta_usada";
-
-    function leerLocalStorageSeguro(key) {
-      try {
-        return localStorage.getItem(key);
-      } catch (e) {
-        return null;
-      }
-    }
-
-    function guardarLocalStorageSeguro(key, value) {
-      try {
-        localStorage.setItem(key, value);
-      } catch (e) {}
-    }
-
-    function leerCookie(name) {
-      const prefix = name + "=";
-      const parts = document.cookie ? document.cookie.split(";") : [];
-      for (const part of parts) {
-        const value = part.trim();
-        if (value.startsWith(prefix)) return value.slice(prefix.length);
-      }
-      return null;
-    }
-
-    function intentoYaUsado() {
-      const usadoEnStorage = ruletaStorageKeys.some(
-        key => leerLocalStorageSeguro(key) === "si"
-      );
-      const usadoEnCookie = leerCookie(ruletaCookieKey) === "si";
-      return usadoEnStorage || usadoEnCookie;
-    }
-
-    function marcarIntentoUsado() {
-      ruletaStorageKeys.forEach(key => guardarLocalStorageSeguro(key, "si"));
-      document.cookie = `${ruletaCookieKey}=si; Max-Age=31536000; Path=/; SameSite=Lax`;
-    }
-
-    let alreadySpun = intentoYaUsado();
+    let alreadySpun =
+      localStorage.getItem("billions_ruleta_usada5") === "si" ||
+      localStorage.getItem("billions_ruleta_usada3") === "si";
 
     const colors = [
       "#003a91",
@@ -696,14 +665,13 @@
     }
 
     function spinWheel() {
-      if (alreadySpun || intentoYaUsado()) {
-        alreadySpun = true;
+      if (alreadySpun) {
         bloquearRuletaUsada();
         return;
       }
 
       alreadySpun = true;
-      marcarIntentoUsado();
+      localStorage.setItem("billions_ruleta_usada5", "si");
 
       spinBtn.disabled = true;
       spinBtn.textContent = "Girando...";
@@ -741,7 +709,8 @@
 
     function mostrarResultado(premio) {
       prizeName.textContent = premio.nombre;
-      claimMessage.textContent = `QUIERO RECLAMAR ${premio.nombre} - CARGA MÍNIMA $${premio.cargaMinima.toLocaleString("es-AR")}`;
+      cargaMinima.textContent = `$${premio.cargaMinima}`;
+      claimMessage.textContent = `QUIERO RECLAMAR ${premio.nombre} - CARGA $${premio.cargaMinima}`;
 
       resultCard.style.display = "block";
 
@@ -829,8 +798,7 @@
 
     drawWheel();
 
-    if (intentoYaUsado()) {
-      alreadySpun = true;
+    if (alreadySpun) {
       bloquearRuletaUsada();
     }
   </script>
