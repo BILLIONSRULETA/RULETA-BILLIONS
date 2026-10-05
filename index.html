@@ -541,9 +541,49 @@
     const radius = center - 18;
 
     let currentRotation = 0;
-    let alreadySpun =
-      localStorage.getItem("billions_ruleta_usada3") === "si" ||
-      localStorage.getItem("billions_ruleta_usada5") === "si";
+
+    const BILLIONS_RULETA_KEY = "billions_ruleta_usada";
+
+    function cookieTieneIntentoUsado() {
+      return document.cookie
+        .split(";")
+        .map(v => v.trim())
+        .some(v => v === BILLIONS_RULETA_KEY + "=si");
+    }
+
+    function yaUsoRuleta() {
+      try {
+        if (localStorage.getItem(BILLIONS_RULETA_KEY) === "si") return true;
+
+        // Compatibilidad con las versiones anteriores.
+        if (localStorage.getItem("billions_ruleta_usada3") === "si") return true;
+        if (localStorage.getItem("billions_ruleta_usada5") === "si") return true;
+      } catch (e) {}
+
+      try {
+        if (sessionStorage.getItem(BILLIONS_RULETA_KEY) === "si") return true;
+      } catch (e) {}
+
+      return cookieTieneIntentoUsado();
+    }
+
+    function marcarRuletaUsada() {
+      try {
+        localStorage.setItem(BILLIONS_RULETA_KEY, "si");
+        localStorage.setItem("billions_ruleta_usada3", "si");
+        localStorage.setItem("billions_ruleta_usada5", "si");
+      } catch (e) {}
+
+      try {
+        sessionStorage.setItem(BILLIONS_RULETA_KEY, "si");
+      } catch (e) {}
+
+      document.cookie =
+        BILLIONS_RULETA_KEY +
+        "=si; Max-Age=31536000; Path=/; SameSite=Lax";
+    }
+
+    let alreadySpun = yaUsoRuleta();
 
     const colors = [
       "#003a91",
@@ -665,13 +705,15 @@
     }
 
     function spinWheel() {
+      alreadySpun = alreadySpun || yaUsoRuleta();
+
       if (alreadySpun) {
         bloquearRuletaUsada();
         return;
       }
 
       alreadySpun = true;
-      localStorage.setItem("billions_ruleta_usada3", "si");
+      marcarRuletaUsada();
 
       spinBtn.disabled = true;
       spinBtn.textContent = "Girando...";
@@ -709,7 +751,9 @@
 
     function mostrarResultado(premio) {
       prizeName.textContent = premio.nombre;
-      cargaMinima.textContent = `$${premio.cargaMinima}`;
+      if (cargaMinima) {
+        cargaMinima.textContent = `$${premio.cargaMinima}`;
+      }
       claimMessage.textContent = `QUIERO RECLAMAR ${premio.nombre} - CARGA MÍNIMA $${premio.cargaMinima}`;
 
       resultCard.style.display = "block";
@@ -797,6 +841,8 @@
     }
 
     drawWheel();
+
+    alreadySpun = yaUsoRuleta();
 
     if (alreadySpun) {
       bloquearRuletaUsada();
