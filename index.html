@@ -408,12 +408,6 @@
       <div class="prize-name" id="prizeName">---</div>
 
       <p class="claim-text">
-        Para participar de este premio tenés que hacer una carga mínima de:
-        <br>
-        <strong id="cargaMinima">---</strong>
-      </p>
-
-      <p class="claim-text">
         Para activarlo, abrí el webchat y escribí:
         <br>
         <strong id="claimMessage">QUIERO MI PREMIO</strong>
@@ -481,12 +475,12 @@
 
   <script>
     const premios = [
-      { nombre: "3.500 FICHAS", porcentaje: 32, cargaMinima: "10.500" },
-      { nombre: "2.500 EXTRA", porcentaje: 32, cargaMinima: "5.000" },
-      { nombre: "5.000 EXTRA", porcentaje: 1, cargaMinima: "15.000" },
-      { nombre: "1.000 FICHAS", porcentaje: 32, cargaMinima: "3.000" },
-      { nombre: "2.000 FICHAS", porcentaje: 2, cargaMinima: "4.000" },
-      { nombre: "3.000 FICHAS", porcentaje: 1, cargaMinima: "10.000" }     
+      { nombre: "3.500 FICHAS", porcentaje: 32 },
+      { nombre: "2.500 EXTRA", porcentaje: 32 },
+      { nombre: "5.000 EXTRA", porcentaje: 1 },
+      { nombre: "1.000 FICHAS", porcentaje: 32 },
+      { nombre: "2.000 FICHAS", porcentaje: 2 },
+      { nombre: "3.000 FICHAS", porcentaje: 1 }     
     ];
 
     const canvas = document.getElementById("wheel");
@@ -496,7 +490,6 @@
     const centerSpin = document.getElementById("centerSpin");
     const resultCard = document.getElementById("resultCard");
     const prizeName = document.getElementById("prizeName");
-    const cargaMinima = document.getElementById("cargaMinima");
     const claimMessage = document.getElementById("claimMessage");
     const openChatBtn = document.getElementById("openChatBtn");
     const webchatGuide = document.getElementById("webchatGuide");
@@ -541,49 +534,7 @@
     const radius = center - 18;
 
     let currentRotation = 0;
-
-    const BILLIONS_RULETA_KEY = "billions_ruleta_usada";
-
-    function cookieTieneIntentoUsado() {
-      return document.cookie
-        .split(";")
-        .map(v => v.trim())
-        .some(v => v === BILLIONS_RULETA_KEY + "=si");
-    }
-
-    function yaUsoRuleta() {
-      try {
-        if (localStorage.getItem(BILLIONS_RULETA_KEY) === "si") return true;
-
-        // Compatibilidad con las versiones anteriores.
-        if (localStorage.getItem("billions_ruleta_usada3") === "si") return true;
-        if (localStorage.getItem("billions_ruleta_usada5") === "si") return true;
-      } catch (e) {}
-
-      try {
-        if (sessionStorage.getItem(BILLIONS_RULETA_KEY) === "si") return true;
-      } catch (e) {}
-
-      return cookieTieneIntentoUsado();
-    }
-
-    function marcarRuletaUsada() {
-      try {
-        localStorage.setItem(BILLIONS_RULETA_KEY, "si");
-        localStorage.setItem("billions_ruleta_usada3", "si");
-        localStorage.setItem("billions_ruleta_usada5", "si");
-      } catch (e) {}
-
-      try {
-        sessionStorage.setItem(BILLIONS_RULETA_KEY, "si");
-      } catch (e) {}
-
-      document.cookie =
-        BILLIONS_RULETA_KEY +
-        "=si; Max-Age=31536000; Path=/; SameSite=Lax";
-    }
-
-    let alreadySpun = yaUsoRuleta();
+    let alreadySpun = localStorage.getItem("billions_ruleta_usada") === "si";
 
     const colors = [
       "#003a91",
@@ -705,15 +656,13 @@
     }
 
     function spinWheel() {
-      alreadySpun = alreadySpun || yaUsoRuleta();
-
       if (alreadySpun) {
         bloquearRuletaUsada();
         return;
       }
 
       alreadySpun = true;
-      marcarRuletaUsada();
+      localStorage.setItem("billions_ruleta_usada", "si");
 
       spinBtn.disabled = true;
       spinBtn.textContent = "Girando...";
@@ -751,10 +700,7 @@
 
     function mostrarResultado(premio) {
       prizeName.textContent = premio.nombre;
-      if (cargaMinima) {
-        cargaMinima.textContent = `$${premio.cargaMinima}`;
-      }
-      claimMessage.textContent = `QUIERO RECLAMAR ${premio.nombre} - CARGA MÍNIMA $${premio.cargaMinima}`;
+      claimMessage.textContent = `QUIERO RECLAMAR ${premio.nombre}`;
 
       resultCard.style.display = "block";
 
@@ -841,8 +787,6 @@
     }
 
     drawWheel();
-
-    alreadySpun = yaUsoRuleta();
 
     if (alreadySpun) {
       bloquearRuletaUsada();
