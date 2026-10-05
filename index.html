@@ -534,7 +534,47 @@
     const radius = center - 18;
 
     let currentRotation = 0;
-    let alreadySpun = localStorage.getItem("billions_ruleta_usada5") === "si";
+    const ruletaStorageKeys = ["billions_ruleta_usada", "billions_ruleta_usada3", "billions_ruleta_usada5"];
+    const ruletaCookieKey = "billions_ruleta_usada";
+
+    function leerLocalStorageSeguro(key) {
+      try {
+        return localStorage.getItem(key);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function guardarLocalStorageSeguro(key, value) {
+      try {
+        localStorage.setItem(key, value);
+      } catch (e) {}
+    }
+
+    function leerCookie(name) {
+      const prefix = name + "=";
+      const parts = document.cookie ? document.cookie.split(";") : [];
+      for (const part of parts) {
+        const value = part.trim();
+        if (value.startsWith(prefix)) return value.slice(prefix.length);
+      }
+      return null;
+    }
+
+    function intentoYaUsado() {
+      const usadoEnStorage = ruletaStorageKeys.some(
+        key => leerLocalStorageSeguro(key) === "si"
+      );
+      const usadoEnCookie = leerCookie(ruletaCookieKey) === "si";
+      return usadoEnStorage || usadoEnCookie;
+    }
+
+    function marcarIntentoUsado() {
+      ruletaStorageKeys.forEach(key => guardarLocalStorageSeguro(key, "si"));
+      document.cookie = `${ruletaCookieKey}=si; Max-Age=31536000; Path=/; SameSite=Lax`;
+    }
+
+    let alreadySpun = intentoYaUsado();
 
     const colors = [
       "#003a91",
@@ -656,13 +696,14 @@
     }
 
     function spinWheel() {
-      if (alreadySpun) {
+      if (alreadySpun || intentoYaUsado()) {
+        alreadySpun = true;
         bloquearRuletaUsada();
         return;
       }
 
       alreadySpun = true;
-      localStorage.setItem("billions_ruleta_usada5", "si");
+      marcarIntentoUsado();
 
       spinBtn.disabled = true;
       spinBtn.textContent = "Girando...";
@@ -788,7 +829,8 @@
 
     drawWheel();
 
-    if (alreadySpun) {
+    if (intentoYaUsado()) {
+      alreadySpun = true;
       bloquearRuletaUsada();
     }
   </script>
