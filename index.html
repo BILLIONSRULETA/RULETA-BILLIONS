@@ -243,6 +243,14 @@
       margin-bottom: 16px;
     }
 
+    #requiredLoad {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 26px;
+      color: #ffffff;
+      text-shadow: 0 0 12px rgba(220, 240, 255, .78), 0 0 24px rgba(0, 120, 255, .42);
+    }
+
     .claim-btn {
       width: 100%;
       border: none;
@@ -408,7 +416,11 @@
       <div class="prize-name" id="prizeName">---</div>
 
       <p class="claim-text">
-        Para activarlo, abrí el webchat y escribí:
+        Para activar este premio tenés que hacer una carga mínima de:
+        <br>
+        <strong id="requiredLoad">---</strong>
+        <br><br>
+        Después abrí el webchat y escribí:
         <br>
         <strong id="claimMessage">QUIERO MI PREMIO</strong>
       </p>
@@ -475,12 +487,12 @@
 
   <script>
     const premios = [
-      { nombre: "3.500 FICHAS", porcentaje: 32 },
-      { nombre: "2.500 EXTRA", porcentaje: 32 },
-      { nombre: "5.000 EXTRA", porcentaje: 1 },
-      { nombre: "1.000 FICHAS", porcentaje: 32 },
-      { nombre: "2.000 FICHAS", porcentaje: 2 },
-      { nombre: "3.000 FICHAS", porcentaje: 1 }     
+      { nombre: "3.500 FICHAS", porcentaje: 32, cargaMinima: 10500 },
+      { nombre: "2.500 EXTRA", porcentaje: 32, cargaMinima: 5000 },
+      { nombre: "5.000 EXTRA", porcentaje: 1, cargaMinima: 15000 },
+      { nombre: "1.000 FICHAS", porcentaje: 32, cargaMinima: 3000 },
+      { nombre: "2.000 FICHAS", porcentaje: 2, cargaMinima: 4000 },
+      { nombre: "3.000 FICHAS", porcentaje: 1, cargaMinima: 10000 }     
     ];
 
     const canvas = document.getElementById("wheel");
@@ -490,6 +502,7 @@
     const centerSpin = document.getElementById("centerSpin");
     const resultCard = document.getElementById("resultCard");
     const prizeName = document.getElementById("prizeName");
+    const requiredLoad = document.getElementById("requiredLoad");
     const claimMessage = document.getElementById("claimMessage");
     const openChatBtn = document.getElementById("openChatBtn");
     const webchatGuide = document.getElementById("webchatGuide");
@@ -700,7 +713,8 @@
 
     function mostrarResultado(premio) {
       prizeName.textContent = premio.nombre;
-      claimMessage.textContent = `QUIERO RECLAMAR ${premio.nombre}`;
+      requiredLoad.textContent = `$${premio.cargaMinima.toLocaleString("es-AR")}`;
+      claimMessage.textContent = `QUIERO RECLAMAR ${premio.nombre} - CARGA $${premio.cargaMinima.toLocaleString("es-AR")}`;
 
       resultCard.style.display = "block";
 
